@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Rudra Innovations</title>
+    <link rel="stylesheet" href="admin-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-card">
+                <h1>Admin Login</h1>
+                <p class="login-subtitle">Rudra Innovations Admin Panel</p>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginUsername">Username</label>
+                        <input type="text" id="loginUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Login</button>
+                    <div id="loginMessage" class="message"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="admin-panel" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Rudra Innovations</h2>
+                <p>Admin Panel</p>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-section="dashboard">
+                    <span>📊</span> Dashboard
+                </button>
+                <button class="nav-item" data-section="projects">
+                    <span>💼</span> Projects
+                </button>
+                <button class="nav-item" data-section="team">
+                    <span>👥</span> Team Members
+                </button>
+                <button class="nav-item" data-section="testimonials">
+                    <span>💬</span> Testimonials
+                </button>
+                <button class="nav-item" data-section="blog">
+                    <span>📝</span> Blog Posts
+                </button>
+                <button class="nav-item" data-section="faq">
+                    <span>❓</span> FAQ
+                </button>
+                <button class="nav-item" data-section="services">
+                    <span>⚙️</span> Services
+                </button>
+                <button class="nav-item" data-section="settings">
+                    <span>⚙️</span> Settings
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn btn-secondary btn-full">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="admin-header">
+                <h1 id="pageTitle">Dashboard</h1>
+                <div class="header-actions">
+                    <a href="/" target="_blank" class="btn btn-secondary">View Website</a>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Projects</h3>
+                        <p class="stat-number" id="statProjects">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Team Members</h3>
+                        <p class="stat-number" id="statTeam">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Testimonials</h3>
+                        <p class="stat-number" id="statTestimonials">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Blog Posts</h3>
+                        <p class="stat-number" id="statBlog">0</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Projects Section -->
+            <section id="projects" class="content-section">
+                <div class="section-header">
+                    <h2>Projects Management</h2>
+                    <button class="btn btn-primary" id="addProjectBtn">+ Add Project</button>
+                </div>
+                <div id="projectsList" class="items-list"></div>
+            </section>
+
+            <!-- Team Section -->
+            <section id="team" class="content-section">
+                <div class="section-header">
+                    <h2>Team Members Management</h2>
+                    <button class="btn btn-primary" id="addTeamBtn">+ Add Team Member</button>
+                </div>
+                <div id="teamList" class="items-list"></div>
+            </section>
+
+            <!-- Testimonials Section -->
+            <section id="testimonials" class="content-section">
+                <div class="section-header">
+                    <h2>Testimonials Management</h2>
+                    <button class="btn btn-primary" id="addTestimonialBtn">+ Add Testimonial</button>
+                </div>
+                <div id="testimonialsList" class="items-list"></div>
+            </section>
+
+            <!-- Blog Section -->
+            <section id="blog" class="content-section">
+                <div class="section-header">
+                    <h2>Blog Posts Management</h2>
+                    <button class="btn btn-primary" id="addBlogBtn">+ Add Blog Post</button>
+                </div>
+                <div id="blogList" class="items-list"></div>
+            </section>
+
+            <!-- FAQ Section -->
+            <section id="faq" class="content-section">
+                <div class="section-header">
+                    <h2>FAQ Management</h2>
+                    <button class="btn btn-primary" id="addFaqBtn">+ Add FAQ</button>
+                </div>
+                <div id="faqList" class="items-list"></div>
+            </section>
+
+            <!-- Services Section -->
+            <section id="services" class="content-section">
+                <div class="section-header">
+                    <h2>Services Management</h2>
+                    <button class="btn btn-primary" id="addServiceBtn">+ Add Service</button>
+                </div>
+                <div id="servicesList" class="items-list"></div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="content-section">
+                <div class="section-header">
+                    <h2>Settings</h2>
+                </div>
+                <div class="settings-card">
+                    <h3>Change Admin Password</h3>
+                    <form id="changePasswordForm">
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" id="currentPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="newPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" id="confirmPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Change Password</button>
+                        <div id="passwordMessage" class="message"></div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Project Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="projectModalTitle">Add Project</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="projectForm">
+                <input type="hidden" id="projectId">
+                <div class="form-group">
+                    <label>Title *</label>
+                    <input type="text" id="projectTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Description *</label>
+                    <textarea id="projectDescription" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="url" id="projectImage">
+                </div>
+                <div class="form-group">
+                    <label>Tags (comma separated)</label>
+                    <input type="text" id="projectTags" placeholder="Web Development, Mobile, Cloud">
+                </div>
+                <div class="form-group">
+                    <label>Link</label>
+                    <input type="url" id="projectLink">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Team Modal -->
+    <div id="teamModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="teamModalTitle">Add Team Member</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="teamForm">
+                <input type="hidden" id="teamId">
+                <div class="form-group">
+                    <label>Name *</label>
+                    <input type="text" id="teamName" required>
+                </div>
+                <div class="form-group">
+                    <label>Role/Position *</label>
+                    <input type="text" id="teamRole" required>
+                </div>
+                <div class="form-group">
+                    <label>Bio</label>
+                    <textarea id="teamBio" rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="url" id="teamImage">
+                </div>
+                <div class="form-group">
+                    <label>LinkedIn URL</label>
+                    <input type="url" id="teamLinkedIn">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Testimonial Modal -->
+    <div id="testimonialModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="testimonialModalTitle">Add Testimonial</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="testimonialForm">
+                <input type="hidden" id="testimonialId">
+                <div class="form-group">
+                    <label>Author Name *</label>
+                    <input type="text" id="testimonialName" required>
+                </div>
+                <div class="form-group">
+                    <label>Author Role/Company *</label>
+                    <input type="text" id="testimonialRole" required>
+                </div>
+                <div class="form-group">
+                    <label>Testimonial Text *</label>
+                    <textarea id="testimonialText" rows="5" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="url" id="testimonialImage">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Blog Modal -->
+    <div id="blogModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="blogModalTitle">Add Blog Post</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="blogForm">
+                <input type="hidden" id="blogId">
+                <div class="form-group">
+                    <label>Title *</label>
+                    <input type="text" id="blogTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Excerpt *</label>
+                    <textarea id="blogExcerpt" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Category *</label>
+                    <input type="text" id="blogCategory" required>
+                </div>
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date" id="blogDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="url" id="blogImage">
+                </div>
+                <div class="form-group">
+                    <label>Content/Link</label>
+                    <input type="url" id="blogLink" placeholder="Link to full article">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FAQ Modal -->
+    <div id="faqModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="faqModalTitle">Add FAQ</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="faqForm">
+                <input type="hidden" id="faqId">
+                <div class="form-group">
+                    <label>Question *</label>
+                    <input type="text" id="faqQuestion" required>
+                </div>
+                <div class="form-group">
+                    <label>Answer *</label>
+                    <textarea id="faqAnswer" rows="5" required></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Service Modal -->
+    <div id="serviceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="serviceModalTitle">Add Service</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="serviceForm">
+                <input type="hidden" id="serviceId">
+                <div class="form-group">
+                    <label>Title *</label>
+                    <input type="text" id="serviceTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Description *</label>
+                    <textarea id="serviceDescription" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Icon (Emoji or Unicode)</label>
+                    <input type="text" id="serviceIcon" placeholder="💻">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin-script.js"></script>
+</body>
+</html>
+
