@@ -22,7 +22,11 @@
     "express-rate-limit": "^7.1.1",
     "dotenv": "^16.3.1",
     "validator": "^13.11.0",
-    "body-parser": "^1.20.2"
+    "body-parser": "^1.20.2",
+    "sqlite3": "^5.1.6"
+  },
+  "optionalDependencies": {
+    "serverless-http": "^3.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

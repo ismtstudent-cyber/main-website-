@@ -7,6 +7,27 @@ const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const crypto = require('crypto');
 require('dotenv').config();
+const USE_DB = process.env.USE_DB === 'true';
+
+let db;
+let runAsync, allAsync, getAsync;
+if (USE_DB) {
+  const sqlite3 = require('sqlite3').verbose();
+  const DB_PATH = path.join(__dirname, 'data', 'database.sqlite');
+  db = new sqlite3.Database(DB_PATH);
+  runAsync = (sql, params = []) => new Promise((resolve, reject) => db.run(sql, params, function(err) {
+    if (err) return reject(err);
+    resolve(this);
+  }));
+  allAsync = (sql, params = []) => new Promise((resolve, reject) => db.all(sql, params, (err, rows) => {
+    if (err) return reject(err);
+    resolve(rows);
+  }));
+  getAsync = (sql, params = []) => new Promise((resolve, reject) => db.get(sql, params, (err, row) => {
+    if (err) return reject(err);
+    resolve(row);
+  }));
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,25 +49,48 @@ async function initializeDataFiles() {
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
     
-    // Initialize files with empty arrays if they don't exist
-    for (const [key, filePath] of Object.entries(DATA_FILES)) {
-      if (key === 'admin') {
-        // Admin file with default credentials
-        try {
-          await fs.access(filePath);
-        } catch {
-          const defaultAdmin = {
-            username: 'admin',
-            password: crypto.createHash('sha256').update('admin123').digest('hex')
-          };
-          await fs.writeFile(filePath, JSON.stringify(defaultAdmin, null, 2));
-          console.log('Default admin credentials: username: admin, password: admin123');
-        }
-      } else {
-        try {
-          await fs.access(filePath);
-        } catch {
-          await fs.writeFile(filePath, JSON.stringify([], null, 2));
+    if (USE_DB) {
+      // Initialize SQLite tables. We'll store each record as JSON text for flexibility.
+      const tables = Object.keys(DATA_FILES).map(k => k).filter(k => k !== 'admin');
+      for (const t of tables) {
+        const tableName = `tbl_${t}`;
+        await runAsync(`CREATE TABLE IF NOT EXISTS ${tableName} (id TEXT PRIMARY KEY, json TEXT)`);
+      }
+
+      // Admin table
+      await runAsync(`CREATE TABLE IF NOT EXISTS tbl_admin (id TEXT PRIMARY KEY, json TEXT)`);
+
+      // Ensure admin row exists
+      const adminRow = await getAsync(`SELECT json FROM tbl_admin WHERE id = ?`, ['admin']);
+      if (!adminRow) {
+        const defaultAdmin = {
+          username: 'admin',
+          password: crypto.createHash('sha256').update('admin123').digest('hex')
+        };
+        await runAsync(`INSERT INTO tbl_admin (id, json) VALUES (?, ?)`, ['admin', JSON.stringify(defaultAdmin)]);
+        console.log('Default admin credentials: username: admin, password: admin123');
+      }
+    } else {
+      // File-based fallback
+      for (const [key, filePath] of Object.entries(DATA_FILES)) {
+        if (key === 'admin') {
+          // Admin file with default credentials
+          try {
+            await fs.access(filePath);
+          } catch {
+            const defaultAdmin = {
+              username: 'admin',
+              password: crypto.createHash('sha256').update('admin123').digest('hex')
+            };
+            await fs.writeFile(filePath, JSON.stringify(defaultAdmin, null, 2));
+            console.log('Default admin credentials: username: admin, password: admin123');
+          }
+        } else {
+          try {
+            await fs.access(filePath);
+          } catch {
+            await fs.writeFile(filePath, JSON.stringify([], null, 2));
+          }
         }
       }
     }
@@ -63,11 +107,39 @@ async function readData(key) {
     const data = await fs.readFile(DATA_FILES[key], 'utf8');
     return JSON.parse(data);
   } catch (error) {
+    if (USE_DB) {
+      try {
+        if (key === 'admin') {
+          const row = await getAsync(`SELECT json FROM tbl_admin WHERE id = ?`, ['admin']);
+          return row ? JSON.parse(row.json) : null;
+        }
+        const tableName = `tbl_${key}`;
+        const rows = await allAsync(`SELECT json FROM ${tableName}`);
+        return rows.map(r => JSON.parse(r.json));
+      } catch (err) {
+        return key === 'admin' ? null : [];
+      }
+    }
     return key === 'admin' ? null : [];
   }
 }
 
 async function writeData(key, data) {
+  if (USE_DB) {
+    if (key === 'admin') {
+      await runAsync(`REPLACE INTO tbl_admin (id, json) VALUES (?, ?)`, ['admin', JSON.stringify(data)]);
+      return;
+    }
+    const tableName = `tbl_${key}`;
+    // replace all rows: simple approach - delete existing and insert new
+    await runAsync(`DELETE FROM ${tableName}`);
+    for (const item of data) {
+      const id = item.id || crypto.randomBytes(16).toString('hex');
+      const toInsert = { ...item, id };
+      await runAsync(`INSERT OR REPLACE INTO ${tableName} (id, json) VALUES (?, ?)`, [id, JSON.stringify(toInsert)]);
+    }
+    return;
+  }
   await fs.writeFile(DATA_FILES[key], JSON.stringify(data, null, 2));
 }
 
@@ -184,7 +256,12 @@ app.get('/admin', (req, res) => {
 app.post('/api/admin/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log('Admin login attempt:', { username });
     const adminData = await readData('admin');
+    if (!adminData) {
+      console.error('Admin data not found during login');
+      return res.status(500).json({ success: false, message: 'Admin data not found on server' });
+    }
     
     if (!adminData || adminData.username !== username) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
@@ -671,7 +748,11 @@ app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
 
